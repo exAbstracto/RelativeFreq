@@ -21,7 +21,7 @@ if corpus:
     if words:
 
         # Do we want to remove stopwords?
-        flagRemoveStopWords = boolOption('Do you want to remove the stopwords from the corpus? ')
+        flagRemoveStopWords = boolOption('Do you want to remove the stopwords from corpus? ')
         if flagRemoveStopWords == 1:
 
             # Let's ask our user to supply the stopwords file name
