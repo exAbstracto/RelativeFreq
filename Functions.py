@@ -3,10 +3,10 @@ import logging, os, collections, sys, gensim, re, regex
 from nltk import tokenize, collocations, stem
 from langdetect import detect
 
-import line_profiler
-import atexit
-profile = line_profiler.LineProfiler()
-atexit.register(profile.print_stats)
+# import line_profiler
+# import atexit
+# profile = line_profiler.LineProfiler()
+# atexit.register(profile.print_stats)
 
 # Constants
 ctPunctuationTokens = ['.', '..', '...', ',', ';', ':', '(', ')', '"', '\'', '[', ']', '{', '}',
@@ -211,7 +211,7 @@ def doStemming(words):
 # ------------------------------------------------------------------------
 # A function to find and mark collocations (bi-grams) in a corpus of text
 # ------------------------------------------------------------------------
-@profile
+# @profile
 def findCollocations(words):
     if words:
         # Find collocations (Manning's algorithm, NLTK)
