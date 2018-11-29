@@ -1,5 +1,7 @@
 # First, import the python libraries we're going to use
-import logging, os, collections, sys, gensim, re, regex
+import logging, os, collections, sys, re
+import regex
+# import gensim
 from nltk import tokenize, collocations, stem
 from langdetect import detect
 
@@ -71,13 +73,14 @@ def loadWords(fileName):
     :return: iterable of words
     """
     words = []
-    if fileName:
+    if fileName and os.path.exists(fileName):
         logging.info("Loading words from file %s [%0.3f Mb].", fileName, os.path.getsize(fileName) / (1024 * 1024))
         try:
             # words = tokenize.word_tokenize(text=open(fileName, mode='r', encoding='utf-8').read(), language='english')
             words = re.findall(r'\w+', open(fileName, mode='r', encoding='utf-8').read().lower())
             logging.info("%s words loaded...", '{:,}'.format(len(words)))
         except Exception as e:
+            # logging.info("Please provide a valid file name.")
             logging.info(repr(e))
     else:
         logging.info("Please provide a valid file name.")
@@ -212,58 +215,113 @@ def doStemming(words):
 # A function to find and mark collocations (bi-grams) in a corpus of text
 # ------------------------------------------------------------------------
 # @profile
-def findCollocations(words):
+def findCollocations(words, bigramMethod):
     if words:
         # Find collocations (Manning's algorithm, NLTK)
         bigramMeasures = collocations.BigramAssocMeasures()
-        finder = collocations.BigramCollocationFinder.from_words(words)
+        finder = collocations.BigramCollocationFinder.from_words(words=words, window_size=2)
         finder.apply_freq_filter(2)
         topBigrams = finder.nbest(bigramMeasures.pmi, 10000000)
 
-        # # Mark collocations in corpus
-        # corpus = ' '.join(words)
-        # for b1, b2 in topBigrams:
-        #     if b1 and b2 and \
-        #             b1 != b2 and \
-        #             len(b1) > 1 and \
-        #             len(b2) > 1 and \
-        #             b1 not in ctPunctuationTokens and \
-        #             b2 not in ctPunctuationTokens:
-        #         bigramRegex = regex.compile(r'\b%s\b\s{1}\b%s\b' % (b1,b2))
-        #         corpus = bigramRegex.sub(b1+'_'+b2, corpus)
+        # Mark collocations in corpus
+        if bigramMethod == 0:
 
-        # words = tokenize.word_tokenize(text=corpus, language='english')
-
-
-        # Put bi-grams into a dictionary
-        topBigramsDict = {}
-        for bigram in topBigrams:
-            if not bigram[0] in topBigramsDict:
-                topBigramsDict[bigram[0]] = [bigram[1]]
-            else:
-                topBigramsDict[bigram[0]].append(bigram[1])
-
-        # Now mark collocations in corpus
-        document = []
-        skipIndex = -1
-        for index, word in enumerate(words):
-            if index != skipIndex and \
-                    index < len(words)-1 and \
-                    word and words[index+1] and \
-                    word != words[index+1] and \
-                    len(word) > 1 and len(words[index+1]) > 1 and \
-                    word not in ctPunctuationTokens and \
-                    words[index+1] not in ctPunctuationTokens:
-
-                if word not in topBigramsDict:
-                    document.append(word)
-                elif words[index+1] not in topBigramsDict[word]:
-                    document.append(word)
+            # ---------------------------------------------------------------------------------------
+            # METHOD 3 - DICTIONARY
+            # Put bi-grams in a dictionary then loop over the whole corpus once and
+            # check if two successive words are part of a bi-gram from the dictionary
+            # ---------------------------------------------------------------------------------------
+            # +++ Very fast !
+            # ---
+            # ---------------------------------------------------------------------------------------
+            topBigramsDict = {}
+            for bigram in topBigrams:
+                if not bigram[0] in topBigramsDict:
+                    topBigramsDict[bigram[0]] = [bigram[1]]
                 else:
-                    document.append(word+'_'+words[index+1])
-                    skipIndex = index+1
+                    topBigramsDict[bigram[0]].append(bigram[1])
 
-        words = document
+            # Now mark collocations in corpus
+            document = []
+            skipIndex = -1
+            for index, word in enumerate(words):
+                if index != skipIndex and \
+                        index < len(words) - 1 and \
+                        word and words[index + 1] and \
+                        word != words[index + 1] and \
+                        len(word) > 1 and len(words[index + 1]) > 1 and \
+                        word not in ctPunctuationTokens and words[index + 1] not in ctPunctuationTokens:
+
+                    if word not in topBigramsDict:
+                        document.append(word)
+                    elif words[index + 1] not in topBigramsDict[word]:
+                        document.append(word)
+                    else:
+                        document.append(word + '_' + words[index + 1])
+                        skipIndex = index + 1
+
+            words = document
+
+        elif bigramMethod == 1:
+
+            # ---------------------------------------------------------------------------------------------
+            # METHOD 1 - REGEX
+            # We use a regex to identify & replace all occurrences of the first bi-gram in the full corpus.
+            # Then we move to the second bi-gram and so forth...
+            # ---------------------------------------------------------------------------------------------
+            # +++ We try to use a regex to identify all occurrences of a bi-gram in corpus.
+            #     Then only we move to the next bi-gram.
+            #     The question is: which bi-gram should we apply first?
+            #     By default, we start with the most frequent ones but those are also the most trivial
+            # --- Very slow on larger corpora
+            #     The sequence of identification of all occurrences is not guaranteed
+            # ---------------------------------------------------------------------------------------------
+            corpus = ' '.join(words)
+            for b1, b2 in topBigrams:
+                if b1 and b2 and \
+                        b1 != b2 and \
+                        len(b1) > 1 and \
+                        len(b2) > 1 and \
+                        b1 not in ctPunctuationTokens and \
+                        b2 not in ctPunctuationTokens:
+                    bigramRegex = regex.compile(r'\b%s\b\s{1}\b%s\b' % (b1,b2))
+                    corpus = bigramRegex.sub(b1+'_'+b2, corpus)
+
+            words = tokenize.word_tokenize(text=corpus, language='english')
+
+        elif bigramMethod == 2:
+            # ----------------------------------------------------------------------------------------
+            # METHOD 3 - FULL SCAN
+            # Apply the first bi-gram to the entire corpus, then the second and so forth...
+            # ----------------------------------------------------------------------------------------
+            # +++ It guarantees that a bi-gram is applied to ALL its occurrences in the text.
+            #     Then only we move to the next bi-gram.
+            #     The order of applying bi-grams to corpus is guaranteed.
+            #     The question is: which bi-gram should be applied first?
+            #     By default, we start with the most frequent ones but those are also the most trivial
+            # --- Very very slow, even on smaller corpora!
+            # ---------------------------------------------------------------------------------------
+            for b1, b2 in topBigrams:
+                if b1 and b2 and \
+                    b1 != b2 and \
+                    len(b1) > 1 and \
+                    len(b2) > 1 and \
+                    b1 not in ctPunctuationTokens and \
+                    b2 not in ctPunctuationTokens:
+
+                    document = []
+                    skipIndex = -1
+                    for index, word in enumerate(words):
+                        if index != skipIndex and index < len(words)-1:
+                            if word != b1:
+                                document.append(word)
+                            elif words[index+1] != b2:
+                                document.append(word)
+                            else:
+                                document.append(word+'_'+words[index+1])
+                                skipIndex = index+1
+                    words = []
+                    words = document
 
     return words
 
@@ -304,10 +362,11 @@ def buildDictionary(setOfWords, freqType=0):
             # Use an auxiliary Counter to compute relative (instead of absolute) frequencies
             dictionary_aux = collections.Counter(setOfWords)
             for key, value in dictionary_aux.items():
-                if freqType == 0:
-                    dictionary[key] = value / sum(dictionary_aux.values())
-                else:
-                    dictionary[key] = value
+                if value > 1:
+                    if freqType == 0:
+                        dictionary[key] = value / sum(dictionary_aux.values())
+                    else:
+                        dictionary[key] = value
             dictionary_aux.clear()
             logging.info("Dictionary built. %s words retained.", '{:,}'.format(len(dictionary)))
         except Exception as e:
@@ -331,21 +390,27 @@ def showMostFrequent(dictionary, n):
 # -------------------------------------------------------------------
 # A function to save a dictionary (key, value) to a file on disk
 # -------------------------------------------------------------------
-def saveDictionary(dictionary, folderName, fileName, suffix):
+def saveToFile(text, type, folderName, fileName, suffix):
     """
-    :param dictionary: A collection of words and frequencies
+    :param text: text to be saved to file
     :param fileName: The sub-folder in which we'll save the file
     :param suffix: an optional suffix for the resulting dictionary file name
     """
-    if dictionary:
+    if type == 0:
+        fileType = 'dictionary'
+        extension = '.csv'
+    elif type == 1:
+        fileType = 'corpus'
+        extension = '.txt'
+    if text:
         fpath = os.path.join(folderName)
         if not os.path.exists(fpath):
             os.makedirs(fpath)
         try:
-            fpath = os.path.join(folderName, fileName + suffix + '.csv')
-            logging.info("Saving dictionary to file " + fpath)
+            fpath = os.path.join(folderName, fileName + suffix + extension)
+            logging.info("Saving %s to file " % fileType + fpath)
             with open(fpath, mode='w', encoding='utf-8') as f:
-                f.write('\n'.join('%s\t%s' % word for word in dictionary.most_common()))
+                f.write(text)
                 f.close()
         except Exception as e:
             logging.info(repr(e))
@@ -385,3 +450,19 @@ def boolOption(question):
             return 1
         elif answer.lower() == 'n':
             return 0
+
+
+# ---------------------------------------------------------------------
+# A function to ask the user a question and wait for a numeric reply
+# ---------------------------------------------------------------------
+def int_option(question, default=0):
+    while True:
+        answer = input(question)
+        if not answer:
+            return default
+        else:
+            try:
+                answer_int = int(answer)
+                return answer_int
+            except:
+                pass

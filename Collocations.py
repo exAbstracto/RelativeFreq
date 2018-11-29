@@ -49,22 +49,43 @@ if corpus:
             # Apply the Snowball stemmer
             words = doStemming(words)
 
-        for i in range(10):
-            logging.info('FINDING COLLOCATIONS ----> STEP %s' %(i+1))
+        # Which method to apply collocations ?
+        bigramMethod = -1
+        while bigramMethod not in [0,1,2]:
+            bigramMethod = int_option('Which method to apply collocations to corpus ? (0=''DICTIONARY'', 1=''REGEX'', 2=''FULL SCAN'' (default 0) ')
+        flagProceed = 1
+        if bigramMethod in [1, 2]:
+            flagProceed = boolOption('This method is VERY slow and it will take a long time on large corpora of text. Are you sure you want to proceed? ')
 
-            # Now let's find collocations
-            words = findCollocations(words)
+        if flagProceed == 1:
 
-            collocations = [word for word in words if word.count('_') == i+1]
-            # Now let's find the relative frequencies
-            dictionary = None
-            dictionary = buildDictionary(collocations, freqType=1)
-            if dictionary:
+            for i in range(10):
+                logging.info('FINDING COLLOCATIONS ----> STEP %s' %(i+1))
 
-                # Let's display the 20 most frequent words
+                # Now let's find collocations
+                words = findCollocations(words, bigramMethod)
 
-                showMostFrequent(dictionary, 100)
+                collocations = [word for word in words if word.count('_') == i+1]
+                # Now let's find the relative frequencies
+                dictionary = None
+                dictionary = buildDictionary(collocations, freqType=1)
+                if dictionary:
 
-                # Let's save the dictionary to disk
-                # We create a new folder named after the corpus and store the resulting files there
-                saveDictionary(dictionary, corpus.split('.')[0], corpus.split('.')[0] + '_collocations_step_' + str(i+1), '')
+                    # Let's display the 20 most frequent words
+
+                    showMostFrequent(dictionary, 100)
+
+                    # Let's save the dictionary to disk
+                    # We create a new folder named after the corpus and store the resulting files there
+                    saveToFile(text='\n'.join('%s\t%s' % word for word in dictionary.most_common()),
+                               type=0,
+                               folderName=corpus.split('.')[0],
+                               fileName=corpus.split('.')[0] + '_collocations_step_' + str(i+1),
+                               suffix='')
+
+                # Save also the text, as it is in this step
+                saveToFile(text=' '.join(words),
+                           type=1,
+                           folderName=corpus.split('.')[0],
+                           fileName=corpus.split('.')[0] + '_step_' + str(i+1),
+                           suffix='')
