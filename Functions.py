@@ -186,7 +186,7 @@ def preProcess(document, lowercase=True, unicode=True, diacritics=True, punctuat
         document = [re.sub('[' + ctDigits + ']', '', word) for word in document]
 
     logging.info('Pre-processing of %s words finished successfully!', '{:,}'.format(numWords))
-    logging.info('%s words remaining', len(document))
+    logging.info('%s words remaining', '{:,}'.format(len(document)))
 
     # Remove potential void words
     document = [word for word in document if word.strip() != '']
@@ -387,7 +387,7 @@ def showMostFrequent(dictionary, n):
     if dictionary:
         logging.info('Let''s display the first %s most frequent words, along with their frequencies', n)
         for word in enumerate(dictionary.most_common(n)):
-            logging.info("\t%s. %s (%s)", '{:,}'.format(word[0] + 1), word[1][0], word[1][1])
+            logging.info("\t%s. %s (%.10f)", '{:,}'.format(word[0] + 1), word[1][0], word[1][1])
 
 
 # -------------------------------------------------------------------

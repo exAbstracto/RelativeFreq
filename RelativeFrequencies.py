@@ -16,8 +16,13 @@ corpus = stringOption('Corpus file? [corpus.txt]: ', None, 'corpus.txt')
 if corpus:
 
     # Let's load the individual words in memory
-    words = None
+    words = []
     words = loadWords(corpus)
+    words_aux = [word for word in words if len(word)>1]
+    words.clear()
+    words = words_aux.copy()
+    words_aux.clear()
+
     if words:
 
         # Do we want to remove stopwords?
@@ -37,6 +42,20 @@ if corpus:
                     # Remove the stopwords from the original corpus
                     words = removeStopwords(words, stopwords)
 
+
+        # Do we want to apply the general pre-procesing? (convert all to lowercase, remove unicode characters, remove diacritics, remove punctuation, remove digits?)
+        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
+        if flagPreProcess == 1:
+            words = preProcess(words)
+
+        # Do we want to apply stemming?
+        flagApplyStemming = boolOption('Do you want to apply stemming (remove morphological affixes) on corpus ? ')
+        if flagApplyStemming == 1:
+
+            # Apply the Snowball stemmer
+            words = doStemming(words)
+
+
         # Now let's find the relative frequencies
         dictionary = None
         dictionary = buildDictionary(words)
@@ -47,8 +66,9 @@ if corpus:
 
             # Let's save the dictionary to disk
             # We create a new folder named after the corpus and store the resulting files there
-            most_frequent = dictionary.most_common()
-            saveToFile(text='\n'.join('%s\t%s' % word for word in dictionary.most_common()),
+            # for word in dictionary.most_common():
+            #     print('{} {:0.10f}'.format(word[0], word[1]))
+            saveToFile(text='\n'.join('%s\t%.10f' % (word[0], word[1]) for word in dictionary.most_common()),
                       type=0,
                       folderName=corpus.split('.')[0],
                       fileName=corpus.split('.')[0],
