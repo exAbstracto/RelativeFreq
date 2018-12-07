@@ -43,8 +43,10 @@ if corpus:
                     words = removeStopwords(words, stopwords)
 
 
-        # Do we want to apply the general pre-procesing? (convert all to lowercase, remove unicode characters, remove diacritics, remove punctuation, remove digits?)
-        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
+        # Do we want to apply the general pre-procesing? (convert all to lowercase,
+        # remove unicode characters, remove diacritics, remove punctuation, remove digits?)
+        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, \
+                                    remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
         if flagPreProcess == 1:
             words = preProcess(words)
 

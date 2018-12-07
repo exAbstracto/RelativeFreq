@@ -16,7 +16,7 @@ corpus = stringOption('Corpus file? [corpus.txt]: ', None, 'corpus.txt')
 if corpus:
 
     # Let's load the individual words in memory
-    words = None
+    words = []
     words = loadWords(corpus)
     if words:
 
@@ -37,8 +37,10 @@ if corpus:
                     # Remove the stopwords from the original corpus
                     words = removeStopwords(words, stopwords)
 
-        # Do we want to apply the general pre-procesing? (convert all to lowercase, remove unicode characters, remove diacritics, remove punctuation, remove digits?)
-        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
+        # Do we want to apply the general pre-procesing? (convert all to lowercase,
+        # remove unicode characters, remove diacritics, remove punctuation, remove digits?)
+        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, \
+                                    remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
         if flagPreProcess == 1:
             words = preProcess(words)
 
@@ -52,10 +54,12 @@ if corpus:
         # Which method to apply collocations ?
         bigramMethod = -1
         while bigramMethod not in [0,1,2]:
-            bigramMethod = int_option('Which method to apply collocations to corpus ? (0=''DICTIONARY'', 1=''REGEX'', 2=''FULL SCAN'' (default 0) ')
+            bigramMethod = int_option('Which method to apply collocations to corpus ? '
+                                      '(0=''DICTIONARY'', 1=''REGEX'', 2=''FULL SCAN'' (default 0) ')
         flagProceed = 1
         if bigramMethod in [1, 2]:
-            flagProceed = boolOption('This method is VERY slow and it will take a long time on large corpora of text. Are you sure you want to proceed? ')
+            flagProceed = boolOption('This method is VERY slow and it will take a long time on '
+                                     'large corpora of text. Are you sure you want to proceed? ')
 
         if flagProceed == 1:
 

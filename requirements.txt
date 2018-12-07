@@ -30,6 +30,7 @@ regex==2018.11.22
 requests==2.20.1
 s3transfer==0.1.13
 scipy==1.1.0
+singledispatch==3.4.0.3
 six==1.11.0
 smart-open==1.7.1
 traitlets==4.3.2

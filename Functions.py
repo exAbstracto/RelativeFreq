@@ -329,21 +329,21 @@ def findCollocations(words, bigramMethod):
     return words
 
 
-# -------------------------------------------------------------------
-# A function to find and mark bi-grams in a corpus of text
-# -------------------------------------------------------------------
-def findBigrams(sentences):
-    if sentences:
-        texts = sentences
-        data_words = list(sentencesToWords(texts))
-        bigram = gensim.models.Phrases(data_words, min_count=1, threshold=1)  # higher threshold fewer phrases.
-        bigram_model = gensim.models.phrases.Phraser(bigram)
-        sentences_aux = []
-        sentences_aux = [bigram_model[doc] for doc in texts]
-        sentences = []
-        for sentence in sentences_aux:
-            sentences.append(''.join(sentence))
-    return sentences
+# # -------------------------------------------------------------------
+# # A function to find and mark bi-grams in a corpus of text
+# # -------------------------------------------------------------------
+# def findBigrams(sentences):
+#     if sentences:
+#         texts = sentences
+#         data_words = list(sentencesToWords(texts))
+#         bigram = gensim.models.Phrases(data_words, min_count=1, threshold=1)  # higher threshold fewer phrases.
+#         bigram_model = gensim.models.phrases.Phraser(bigram)
+#         sentences_aux = []
+#         sentences_aux = [bigram_model[doc] for doc in texts]
+#         sentences = []
+#         for sentence in sentences_aux:
+#             sentences.append(''.join(sentence))
+#     return sentences
 
 
 # ------------------------------------------------------------------------------------------------------------------
