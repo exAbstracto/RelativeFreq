@@ -54,13 +54,13 @@ def loadSentences(fileName):
     return originalSentences
 
 
-# -------------------------------------------------------------------
-# A function to split corpus sentences in words
-# -------------------------------------------------------------------
-def sentencesToWords(sentences):
-    for sentence in sentences:
-        # yield (gensim.utils.simple_preprocess(str(sentence), deacc=True))  # deacc=True removes punctuations
-        yield (gensim.utils.simple_preprocess(str(sentence), min_len=1, max_len=100, deacc=False))  # deacc=True removes punctuations
+# # -------------------------------------------------------------------
+# # A function to split corpus sentences in words
+# # -------------------------------------------------------------------
+# def sentencesToWords(sentences):
+#     for sentence in sentences:
+#         # yield (gensim.utils.simple_preprocess(str(sentence), deacc=True))  # deacc=True removes punctuations
+#         yield (gensim.utils.simple_preprocess(str(sentence), min_len=1, max_len=100, deacc=False))  # deacc=True removes punctuations
 
 
 # --------------------------------------------------------------------------------------------------
@@ -76,8 +76,8 @@ def loadWords(fileName):
     if fileName and os.path.exists(fileName):
         logging.info("Loading words from file %s [%0.3f Mb].", fileName, os.path.getsize(fileName) / (1024 * 1024))
         try:
-            # words = tokenize.word_tokenize(text=open(fileName, mode='r', encoding='utf-8').read(), language='english')
-            words = re.findall(r'\w+', open(fileName, mode='r', encoding='utf-8').read().lower())
+            # # words = tokenize.word_tokenize(text=open(fileName, mode='r', encoding='utf-8').read(), language='english')
+            words  =  re.findall(r'\w+', open(fileName, mode='r', encoding='utf-8').read().lower())
             logging.info("%s words loaded...", '{:,}'.format(len(words)))
         except Exception as e:
             # logging.info("Please provide a valid file name.")
@@ -260,6 +260,7 @@ def findCollocations(words, bigramMethod):
                         document.append(word + '_' + words[index + 1])
                         skipIndex = index + 1
 
+            words.clear()
             words = document
 
         elif bigramMethod == 1:
@@ -287,6 +288,7 @@ def findCollocations(words, bigramMethod):
                     bigramRegex = regex.compile(r'\b%s\b\s{1}\b%s\b' % (b1,b2))
                     corpus = bigramRegex.sub(b1+'_'+b2, corpus)
 
+            words.clear()
             words = tokenize.word_tokenize(text=corpus, language='english')
 
         elif bigramMethod == 2:
@@ -320,7 +322,8 @@ def findCollocations(words, bigramMethod):
                             else:
                                 document.append(word+'_'+words[index+1])
                                 skipIndex = index+1
-                    words = []
+
+                    words.clear()
                     words = document
 
     return words

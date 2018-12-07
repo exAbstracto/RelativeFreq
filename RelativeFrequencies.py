@@ -47,4 +47,9 @@ if corpus:
 
             # Let's save the dictionary to disk
             # We create a new folder named after the corpus and store the resulting files there
-            saveDictionary(dictionary, corpus.split('.')[0], corpus.split('.')[0], '')
+            most_frequent = dictionary.most_common()
+            saveToFile(text='\n'.join('%s\t%s' % word for word in dictionary.most_common()),
+                      type=0,
+                      folderName=corpus.split('.')[0],
+                      fileName=corpus.split('.')[0],
+                      suffix='')

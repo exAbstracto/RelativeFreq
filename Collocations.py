@@ -65,27 +65,29 @@ if corpus:
                 # Now let's find collocations
                 words = findCollocations(words, bigramMethod)
 
+                # Save the new text, after applying the bigrams found in this step
+                saveToFile(text=' '.join(words),
+                           # saveToFile(text=words,
+                           type=1,
+                           folderName=corpus.split('.')[0],
+                           fileName=corpus.split('.')[0] + '_step_' + str(i + 1),
+                           suffix='')
+
                 collocations = [word for word in words if word.count('_') == i+1]
                 # Now let's find the relative frequencies
                 dictionary = None
                 dictionary = buildDictionary(collocations, freqType=1)
                 if dictionary:
 
-                    # Let's display the 20 most frequent words
+                    # Let's display the 100 most frequent words
 
                     showMostFrequent(dictionary, 100)
 
                     # Let's save the dictionary to disk
                     # We create a new folder named after the corpus and store the resulting files there
                     saveToFile(text='\n'.join('%s\t%s' % word for word in dictionary.most_common()),
+                    # saveToFile(text=dictionary.most_common(),
                                type=0,
                                folderName=corpus.split('.')[0],
                                fileName=corpus.split('.')[0] + '_collocations_step_' + str(i+1),
                                suffix='')
-
-                # Save also the text, as it is in this step
-                saveToFile(text=' '.join(words),
-                           type=1,
-                           folderName=corpus.split('.')[0],
-                           fileName=corpus.split('.')[0] + '_step_' + str(i+1),
-                           suffix='')
