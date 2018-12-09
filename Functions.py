@@ -380,31 +380,32 @@ def buildDictionary(setOfWords, freqType=0):
 # -------------------------------------------------------------------
 # A function to save a dictionary (key, value) to a file on disk
 # -------------------------------------------------------------------
-def showMostFrequent(dictionary, n):
+def showMostFrequent(dictionary, n, type):
     """ Print most frequent n words from dictionary
     :param n: Number of most frequent n words from dictionary
     """
     if dictionary:
+        format = ''
+        if type == 0:
+            format = '\t%s. %s (%.10f)'
+        elif type == 1:
+            format = '\t%s. %s %s'
         logging.info('Let''s display the first %s most frequent words, along with their frequencies', n)
         for word in enumerate(dictionary.most_common(n)):
-            logging.info("\t%s. %s (%.10f)", '{:,}'.format(word[0] + 1), word[1][0], word[1][1])
+            logging.info(format, '{:,}'.format(word[0] + 1), word[1][0], word[1][1])
 
 
 # -------------------------------------------------------------------
 # A function to save a dictionary (key, value) to a file on disk
 # -------------------------------------------------------------------
-def saveToFile(text, type, folderName, fileName, suffix):
+def saveToCSVFile(text, folderName, fileName, suffix):
     """
     :param text: text to be saved to file
     :param fileName: The sub-folder in which we'll save the file
     :param suffix: an optional suffix for the resulting dictionary file name
     """
-    if type == 0:
-        fileType = 'dictionary'
-        extension = '.csv'
-    elif type == 1:
-        fileType = 'corpus'
-        extension = '.txt'
+    fileType = 'dictionary'
+    extension = '.csv'
     if text:
         fpath = os.path.join(folderName)
         if not os.path.exists(fpath):
@@ -414,6 +415,32 @@ def saveToFile(text, type, folderName, fileName, suffix):
             logging.info("Saving %s to file " % fileType + fpath)
             with open(fpath, mode='w', encoding='utf-8') as f:
                 f.write(text)
+                f.close()
+        except Exception as e:
+            logging.info(repr(e))
+
+
+# -------------------------------------------------------------------
+# A function to save a corpus to a file on disk
+# -------------------------------------------------------------------
+def saveToFile(text, folderName, fileName, suffix):
+    """
+    :param text: text to be saved to file
+    :param fileName: The sub-folder in which we'll save the file
+    :param suffix: an optional suffix for the resulting dictionary file name
+    """
+    fileType = 'corpus'
+    extension = '.txt'
+    if text:
+        fpath = os.path.join(folderName)
+        if not os.path.exists(fpath):
+            os.makedirs(fpath)
+        try:
+            fpath = os.path.join(folderName, fileName + suffix + extension)
+            logging.info("Saving %s to file " % fileType + fpath)
+            with open(fpath, mode='w', encoding='utf-8') as f:
+                for line in text:
+                    f.write(str(line)+' ')
                 f.close()
         except Exception as e:
             logging.info(repr(e))

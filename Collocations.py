@@ -39,8 +39,8 @@ if corpus:
 
         # Do we want to apply the general pre-procesing? (convert all to lowercase,
         # remove unicode characters, remove diacritics, remove punctuation, remove digits?)
-        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, \
-                                    remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
+        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, '
+                                    'remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
         if flagPreProcess == 1:
             words = preProcess(words)
 
@@ -63,35 +63,42 @@ if corpus:
 
         if flagProceed == 1:
 
+            results = {}
+
             for i in range(10):
+
+                results[i] = 0
                 logging.info('FINDING COLLOCATIONS ----> STEP %s' %(i+1))
 
                 # Now let's find collocations
                 words = findCollocations(words, bigramMethod)
 
-                # Save the new text, after applying the bigrams found in this step
-                saveToFile(text=' '.join(words),
-                           # saveToFile(text=words,
-                           type=1,
+                # Save the new text, after applying the bi-grams found in this step
+                # saveToFile(text=' '.join(words),
+                saveToFile(text=words,
                            folderName=corpus.split('.')[0],
                            fileName=corpus.split('.')[0] + '_step_' + str(i + 1),
                            suffix='')
 
                 collocations = [word for word in words if word.count('_') == i+1]
+
                 # Now let's find the relative frequencies
                 dictionary = None
                 dictionary = buildDictionary(collocations, freqType=1)
                 if dictionary:
 
                     # Let's display the 100 most frequent words
-
-                    showMostFrequent(dictionary, 100)
+                    results[i] = len(dictionary.most_common())
+                    showMostFrequent(dictionary, 100, type=1)
 
                     # Let's save the dictionary to disk
                     # We create a new folder named after the corpus and store the resulting files there
-                    saveToFile(text='\n'.join('%s\t%s' % word for word in dictionary.most_common()),
-                    # saveToFile(text=dictionary.most_common(),
-                               type=0,
+                    # saveToFile(text='\n'.join('%s\t%s' % word for word in dictionary.most_common()),
+                    saveToFile(text=[word for word in dictionary.most_common()],
                                folderName=corpus.split('.')[0],
                                fileName=corpus.split('.')[0] + '_collocations_step_' + str(i+1),
                                suffix='')
+
+            logging.info('========== SUMMARY ==========')
+            for i in range(10):
+                logging.info('Step %s:\t%s collocations.' % (i+1, results[i]))

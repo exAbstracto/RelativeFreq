@@ -45,8 +45,8 @@ if corpus:
 
         # Do we want to apply the general pre-procesing? (convert all to lowercase,
         # remove unicode characters, remove diacritics, remove punctuation, remove digits?)
-        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, \
-                                    remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
+        flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, '
+                                    'remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
         if flagPreProcess == 1:
             words = preProcess(words)
 
@@ -64,14 +64,13 @@ if corpus:
         if dictionary:
 
             # Let's display the 20 most frequent words
-            showMostFrequent(dictionary, 20)
+            showMostFrequent(dictionary, 20, type=0)
 
             # Let's save the dictionary to disk
             # We create a new folder named after the corpus and store the resulting files there
             # for word in dictionary.most_common():
             #     print('{} {:0.10f}'.format(word[0], word[1]))
-            saveToFile(text='\n'.join('%s\t%.10f' % (word[0], word[1]) for word in dictionary.most_common()),
-                      type=0,
+            saveToCSVFile(text='\n'.join('%s\t%.10f' % (word[0], word[1]) for word in dictionary.most_common()),
                       folderName=corpus.split('.')[0],
                       fileName=corpus.split('.')[0],
                       suffix='')
