@@ -93,8 +93,8 @@ if corpus:
 
                     # Let's save the dictionary to disk
                     # We create a new folder named after the corpus and store the resulting files there
-                    # saveToFile(text='\n'.join('%s\t%s' % word for word in dictionary.most_common()),
-                    saveToFile(text=[word for word in dictionary.most_common()],
+                    saveToCSVFile(text='\n'.join('%s\t%s' % word for word in dictionary.most_common()),
+                    # saveToFile(text=[word for word in dictionary.most_common()],
                                folderName=corpus.split('.')[0],
                                fileName=corpus.split('.')[0] + '_collocations_step_' + str(i+1),
                                suffix='')
