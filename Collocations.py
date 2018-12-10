@@ -89,11 +89,6 @@ if corpus:
                 dictionary = buildDictionary(collocations, freqType=1)
                 if dictionary:
 
-                    # for j in range(i+1):
-                    #     bigrams = [word[0] for word in dictionary.most_common() if word[0].count('_') == j+1]
-                    #     occurrences = len(bigrams)
-                    #     results[i].append(occurrences)
-
                     results[i] = [len([word[0] for word in dictionary.most_common() if word[0].count('_') == j+1]) for j in range(10)]
                     results[i].append([len([word[0] for word in dictionary.most_common() if word[0].count('_') > 10 ])])
 
