@@ -63,11 +63,12 @@ if corpus:
 
         if flagProceed == 1:
 
+            # Results
             results = {}
 
             for i in range(10):
 
-                results[i] = 0
+                results[i] = []
                 logging.info('FINDING COLLOCATIONS ----> STEP %s' %(i+1))
 
                 # Now let's find collocations
@@ -80,15 +81,23 @@ if corpus:
                            fileName=corpus.split('.')[0] + '_step_' + str(i + 1),
                            suffix='')
 
-                collocations = [word for word in words if word.count('_') == i+1]
+                # collocations = [word for word in words if word.count('_') == i+1]
+                collocations = [word for word in words if word.count('_') > 0]
 
                 # Now let's find the relative frequencies
                 dictionary = None
                 dictionary = buildDictionary(collocations, freqType=1)
                 if dictionary:
 
+                    # for j in range(i+1):
+                    #     bigrams = [word[0] for word in dictionary.most_common() if word[0].count('_') == j+1]
+                    #     occurrences = len(bigrams)
+                    #     results[i].append(occurrences)
+
+                    results[i] = [len([word[0] for word in dictionary.most_common() if word[0].count('_') == j+1]) for j in range(10)]
+                    results[i].append([len([word[0] for word in dictionary.most_common() if word[0].count('_') > 10 ])])
+
                     # Let's display the 100 most frequent words
-                    results[i] = len(dictionary.most_common())
                     showMostFrequent(dictionary, 100, type=1)
 
                     # Let's save the dictionary to disk
@@ -101,4 +110,4 @@ if corpus:
 
             logging.info('========== SUMMARY ==========')
             for i in range(10):
-                logging.info('Step %s:\t%s collocations.' % (i+1, results[i]))
+                logging.info('Step %s: \t%s' %(i+1, results[i]))
