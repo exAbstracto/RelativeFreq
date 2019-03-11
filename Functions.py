@@ -1,5 +1,5 @@
 # First, import the python libraries we're going to use
-import logging, os, collections, sys, re
+import logging, os, collections, sys, re, csv
 import regex
 # import gensim
 from nltk import tokenize, collocations, stem
@@ -12,21 +12,50 @@ from langdetect import detect
 
 # Constants
 ctPunctuationTokens = ['.', '..', '...', ',', ';', ':', '(', ')', '"', '\'', '[', ']', '{', '}',
-                          '?', '!', '-', u'–', '+', '*', '--', '\'\'', '``']
+                       '?', '!', '-', u'–', '+', '*', '--', '\'\'', '``']
 ctPunctuation = '?.!/;:()&+%'
 ctDigits = '0123456789'
 ctLanguages = {
-        'de': 'german',
-        'en': 'english',
-        'es': 'spanish',
-        'fr': 'french',
-        'hu': 'hungarian',
-        'it': 'italian',
-        'ro': 'romanian'
-    }
+    'de': 'german',
+    'en': 'english',
+    'es': 'spanish',
+    'fr': 'french',
+    'hu': 'hungarian',
+    'it': 'italian',
+    'ro': 'romanian'
+}
+ctExcluded = [u'bucurești',
+              u'bucureşti',
+              'bucuresti',
+              'dragnea'
+              ]
 
 # Configure logging
 logging.basicConfig(stream=sys.stdout, format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
+
+# --------------------------------------------------------------------------------------------------
+# A function to load all text from a text file (any text file)
+# We'll use it for loading in memory the entire supplied corpus
+# --------------------------------------------------------------------------------------------------
+def loadCorpus(fileName):
+    """ Split corpus in sentences
+    :param fileName: File containing corpus body
+    :return:
+    """
+    text = ''
+    if fileName:
+        logging.info("Loading corpus...")
+        try:
+            text = open(fileName, mode='r', encoding='utf-8').read().lower()
+            logging.info("Corpus loaded from file %s [%0.3f Mb].",
+                         fileName,
+                         os.path.getsize(fileName) / (1024 * 1024))
+        except Exception as e:
+            logging.info(repr(e))
+    else:
+        logging.info("Please provide a corpus file.")
+    return text
 
 
 # --------------------------------------------------------------------------------------------------
@@ -77,7 +106,7 @@ def loadWords(fileName):
         logging.info("Loading words from file %s [%0.3f Mb].", fileName, os.path.getsize(fileName) / (1024 * 1024))
         try:
             # # words = tokenize.word_tokenize(text=open(fileName, mode='r', encoding='utf-8').read(), language='english')
-            words  =  re.findall(r'\w+', open(fileName, mode='r', encoding='utf-8').read().lower())
+            words = re.findall(r'\w+', open(fileName, mode='r', encoding='utf-8').read().lower())
             logging.info("%s words loaded...", '{:,}'.format(len(words)))
         except Exception as e:
             # logging.info("Please provide a valid file name.")
@@ -86,9 +115,38 @@ def loadWords(fileName):
         logging.info("Please provide a valid file name.")
 
     # Remove potential void words
-    words = [word for word in words if word !='']
+    words = [word for word in words if word != '']
 
     return words
+
+
+# --------------------------------------------------------------------------------------------------
+# A function to load a lexicon from a CSV file into a memory dictionary
+# --------------------------------------------------------------------------------------------------
+def loadLexicon(fileName):
+    """
+    :param fileName: Lexicon, as csv file
+    :return: dictionary of terms
+    """
+    lexicon = {}
+    if fileName and os.path.exists(fileName):
+        logging.info("Loading lexicon from file %s [%0.3f Mb].", fileName, os.path.getsize(fileName) / (1024 * 1024))
+        try:
+            with open(fileName, newline='') as csvfile:
+                spamreader = csv.reader(csvfile, delimiter=';')
+                for row in spamreader:
+                    lexicon[row[0]] = row[1]
+            logging.info("%s words loaded from lexicon...", '{:,}'.format(len(lexicon)))
+        except Exception as e:
+            # logging.info("Please provide a valid file name.")
+            logging.info(repr(e))
+    else:
+        logging.info("Please provide a valid file name.")
+
+    # Remove potential void words
+    # words = [word for word in words if word != '']
+
+    return lexicon
 
 
 # --------------------------------------------------
@@ -144,6 +202,7 @@ def removeDiacritics(text):
     res = res.replace(u'à', 'a')
     return res
 
+
 # -----------------------------------------------------------------
 # A function to do some generic pre-processing on a corpus of words
 # -----------------------------------------------------------------
@@ -170,7 +229,6 @@ def preProcess(document, lowercase=True, unicode=True, diacritics=True, punctuat
     # remove unicode punctuation
     if unicode:
         document = [removeUnicodePunctuation(word) for word in document]
-
 
     # remove diacritics
     if diacritics:
@@ -285,8 +343,8 @@ def findCollocations(words, bigramMethod):
                         len(b2) > 1 and \
                         b1 not in ctPunctuationTokens and \
                         b2 not in ctPunctuationTokens:
-                    bigramRegex = regex.compile(r'\b%s\b\s{1}\b%s\b' % (b1,b2))
-                    corpus = bigramRegex.sub(b1+'_'+b2, corpus)
+                    bigramRegex = regex.compile(r'\b%s\b\s{1}\b%s\b' % (b1, b2))
+                    corpus = bigramRegex.sub(b1 + '_' + b2, corpus)
 
             words.clear()
             words = tokenize.word_tokenize(text=corpus, language='english')
@@ -305,23 +363,23 @@ def findCollocations(words, bigramMethod):
             # ---------------------------------------------------------------------------------------
             for b1, b2 in topBigrams:
                 if b1 and b2 and \
-                    b1 != b2 and \
-                    len(b1) > 1 and \
-                    len(b2) > 1 and \
-                    b1 not in ctPunctuationTokens and \
-                    b2 not in ctPunctuationTokens:
+                        b1 != b2 and \
+                        len(b1) > 1 and \
+                        len(b2) > 1 and \
+                        b1 not in ctPunctuationTokens and \
+                        b2 not in ctPunctuationTokens:
 
                     document = []
                     skipIndex = -1
                     for index, word in enumerate(words):
-                        if index != skipIndex and index < len(words)-1:
+                        if index != skipIndex and index < len(words) - 1:
                             if word != b1:
                                 document.append(word)
-                            elif words[index+1] != b2:
+                            elif words[index + 1] != b2:
                                 document.append(word)
                             else:
-                                document.append(word+'_'+words[index+1])
-                                skipIndex = index+1
+                                document.append(word + '_' + words[index + 1])
+                                skipIndex = index + 1
 
                     words.clear()
                     words = document
@@ -440,7 +498,7 @@ def saveToFile(text, folderName, fileName, suffix):
             logging.info("Saving %s to file " % fileType + fpath)
             with open(fpath, mode='w', encoding='utf-8') as f:
                 for line in text:
-                    f.write(str(line)+' ')
+                    f.write(str(line) + ' ')
                 f.close()
         except Exception as e:
             logging.info(repr(e))
@@ -467,6 +525,7 @@ def stringOption(question, options, default):
                     return answer
             elif not options:
                 return answer
+
 
 # ---------------------------------------------------------------------
 # A function to ask the user a question and wait for a Yes/No reply

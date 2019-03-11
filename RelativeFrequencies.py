@@ -18,7 +18,7 @@ if corpus:
     # Let's load the individual words in memory
     words = []
     words = loadWords(corpus)
-    words_aux = [word for word in words if len(word)>1]
+    words_aux = [word for word in words if len(word) > 1]
     words.clear()
     words = words_aux.copy()
     words_aux.clear()
@@ -38,12 +38,10 @@ if corpus:
                 stopwords = None
                 stopwords = loadWords(stopwords_file)
                 if stopwords:
-
                     # Remove the stopwords from the original corpus
                     words = removeStopwords(words, stopwords)
 
-
-        # Do we want to apply the general pre-procesing? (convert all to lowercase,
+        # Do we want to apply the general pre-processing? (convert all to lowercase,
         # remove unicode characters, remove diacritics, remove punctuation, remove digits?)
         flagPreProcess = boolOption('Do you want to pre-process text (convert to lowercase, '
                                     'remove unicode characters, remove diacritics, remove punctuation, remove digits) ? ')
@@ -53,16 +51,13 @@ if corpus:
         # Do we want to apply stemming?
         flagApplyStemming = boolOption('Do you want to apply stemming (remove morphological affixes) on corpus ? ')
         if flagApplyStemming == 1:
-
             # Apply the Snowball stemmer
             words = doStemming(words)
-
 
         # Now let's find the relative frequencies
         dictionary = None
         dictionary = buildDictionary(words)
         if dictionary:
-
             # Let's display the 20 most frequent words
             showMostFrequent(dictionary, 20, type=0)
 
@@ -71,6 +66,6 @@ if corpus:
             # for word in dictionary.most_common():
             #     print('{} {:0.10f}'.format(word[0], word[1]))
             saveToCSVFile(text='\n'.join('%s\t%.10f' % (word[0], word[1]) for word in dictionary.most_common()),
-                      folderName=corpus.split('.')[0],
-                      fileName=corpus.split('.')[0],
-                      suffix='')
+                          folderName=corpus.split('.')[0],
+                          fileName=corpus.split('.')[0],
+                          suffix='')
