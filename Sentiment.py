@@ -11,24 +11,28 @@ from Functions import *
 # --------------------------------------------------------
 
 # Let's ask our user to supply the corpus file name
-corpusFile = None
-corpusFile = stringOption('Corpus file? [corpus.txt]: ', None, 'corpus.txt')
-if corpusFile:
 
-    lexiconFile = None
-    lexiconFile = stringOption('Lexicon file? [lexicon.txt]: ', None, 'lexicon.csv')
+exclusions = ctExcluded
 
-    if lexiconFile:
 
-        # Let's load the lexicon
-        lexicon = loadLexicon(lexiconFile)
+excludedFile = stringOption('Exclusions file? [exclusions.txt]: ', None, 'exclusions.txt')
+if excludedFile:
+    exclusions = loadWords(excludedFile)
 
-        if lexicon:
+lexiconFile = stringOption('Lexicon file? [lexicon.txt]: ', None, 'lexicon.csv')
+if lexiconFile:
+
+    # Let's load the lexicon
+    lexicon = loadLexicon(lexiconFile)
+    if lexicon:
+
+        corpusFile = stringOption('Corpus file? [corpus.txt]: ', None, 'corpus.txt')
+        if corpusFile:
 
             # Let's load the corpus
             corpus = loadCorpus(corpusFile)
-
             if corpus:
+
                 # Word count
                 tokens = len([word for word in re.findall(r'\w+', corpus) if len(word) > 1])
                 logging.info('%s words in corpus', '{:,}'.format(tokens))
@@ -44,7 +48,7 @@ if corpusFile:
                         term_aux = r'\b' + term_aux + r'\b'
                         termRegex = re.compile(r'%s' % term_aux, re.MULTILINE | re.IGNORECASE)
                         subjValue = lexicon[term]
-                        findings = [x for x in re.findall(termRegex, corpus) if x not in ctExcluded]
+                        findings = [x for x in re.findall(termRegex, corpus) if x not in exclusions]
                         freq = len(findings)
                         outFreq[term] = [subjValue, freq, tokens, freq / tokens * float(subjValue), findings]
                         sentimentIndex += outFreq[term][3]

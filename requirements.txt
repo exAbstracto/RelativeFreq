@@ -6,6 +6,7 @@ botocore==1.12.42
 bz2file==0.98
 certifi==2018.10.15
 chardet==3.0.4
+Cython==0.29.6
 decorator==4.3.0
 docutils==0.14
 gensim==3.6.0
@@ -15,7 +16,6 @@ ipython-genutils==0.2.0
 jedi==0.13.1
 jmespath==0.9.3
 langdetect==1.0.7
-line-profiler==2.1.2
 nltk==3.3
 numpy==1.15.4
 parso==0.3.1
